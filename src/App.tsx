@@ -5,7 +5,13 @@
  * @format
  */
 
-import React, {createContext, useEffect, useMemo, useReducer} from 'react';
+import React, {
+  createContext,
+  useEffect,
+  useMemo,
+  useReducer,
+  useState,
+} from 'react';
 import LoginScreen from './screens/LoginScreen';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -14,6 +20,11 @@ import HomeScreen from './screens/HomeScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CreateScreen from './screens/CreateScreen';
 import ProfileModal from './screens/ProfileModal';
+import {posts} from '../data/posts';
+import {PostsContext} from './context/PostsContext';
+import {storiesData} from '../data/stories';
+import {StoriesContext} from './context/StoriesContext';
+import StoryScreen from './screens/StoryScreen';
 
 export const AuthContext = createContext<{
   signIn: (data: {username: string}) => void;
@@ -26,6 +37,8 @@ export const AuthContext = createContext<{
 const HomeStack = createNativeStackNavigator();
 
 function App(): React.JSX.Element {
+  const [fetchedPosts, setFetchedPosts] = useState<any>(posts);
+
   const [state, dispatch] = useReducer(
     (prevState: any, action: {type: string; token?: null | string}) => {
       switch (action.type) {
@@ -62,6 +75,22 @@ function App(): React.JSX.Element {
     },
   );
 
+  const [stories, setStories] = useState<any>([]);
+  const [orderedStories, setOrderedStories] = useState<any>([]);
+
+  useEffect(() => {
+    setStories(
+      storiesData.map(storyData =>
+        storyData.storyArray?.map((storyArray, index) => ({
+          id: storyData.author + '-' + index,
+          story: storyArray,
+          author: storyData.author,
+          seen: storyData.author === state.userToken ? true : false,
+        })),
+      ),
+    );
+  }, [state?.userToken]);
+
   useEffect(() => {
     const bootstrapAsync = async () => {
       let userToken;
@@ -96,54 +125,76 @@ function App(): React.JSX.Element {
 
   return (
     <AuthContext.Provider value={authContext}>
-      <NavigationContainer>
-        <HomeStack.Navigator>
-          {state.isLoading ? (
-            <HomeStack.Screen
-              name="Splash"
-              component={SplashScreen}
-              options={{headerShown: false}}
-            />
-          ) : state.userToken == null ? (
-            <HomeStack.Screen
-              name="Login"
-              component={LoginScreen}
-              options={{
-                title: 'Sign in',
-                animationTypeForReplace: state.isSignout ? 'pop' : 'push',
-                headerShown: false,
-              }}
-            />
-          ) : (
-            <>
-              <HomeStack.Screen
-                name="Home"
-                component={HomeScreen}
-                options={{
-                  headerShown: false,
-                }}
-              />
-              <HomeStack.Screen
-                name="Create"
-                component={CreateScreen}
-                options={{
-                  animation: 'slide_from_right',
-                }}
-              />
-              <HomeStack.Group
-                screenOptions={{presentation: 'transparentModal'}}>
+      <StoriesContext.Provider
+        value={{stories, setStories, orderedStories, setOrderedStories}}>
+        <PostsContext.Provider value={{fetchedPosts, setFetchedPosts}}>
+          <NavigationContainer>
+            <HomeStack.Navigator>
+              {state.isLoading ? (
                 <HomeStack.Screen
-                  name="ProfileModal"
-                  component={ProfileModal}
+                  name="Splash"
+                  component={SplashScreen}
+                  options={{headerShown: false}}
+                />
+              ) : state.userToken == null ? (
+                <HomeStack.Screen
+                  name="Login"
+                  component={LoginScreen}
                   options={{
+                    title: 'Sign in',
+                    animationTypeForReplace: state.isSignout ? 'pop' : 'push',
                     headerShown: false,
                   }}
                 />
-              </HomeStack.Group>
-            </>
-          )}
-        </HomeStack.Navigator>
-      </NavigationContainer>
+              ) : (
+                <>
+                  <HomeStack.Screen
+                    name="Home"
+                    component={HomeScreen}
+                    options={{
+                      headerShown: false,
+                    }}
+                  />
+                  <HomeStack.Screen
+                    name="Create"
+                    component={CreateScreen}
+                    options={{
+                      animation: 'slide_from_right',
+                      headerBackTitleVisible: false,
+                      headerStyle: {
+                        backgroundColor: '#000',
+                      },
+                      headerTitle: 'Upload photos',
+                      headerTitleStyle: {
+                        color: '#fff',
+                        fontSize: 20,
+                      },
+                    }}
+                  />
+                  <HomeStack.Screen
+                    name="Story"
+                    component={StoryScreen}
+                    options={{
+                      headerShown: false,
+                      animation: 'slide_from_bottom',
+                    }}
+                  />
+                  <HomeStack.Group
+                    screenOptions={{presentation: 'transparentModal'}}>
+                    <HomeStack.Screen
+                      name="ProfileModal"
+                      component={ProfileModal}
+                      options={{
+                        headerShown: false,
+                      }}
+                    />
+                  </HomeStack.Group>
+                </>
+              )}
+            </HomeStack.Navigator>
+          </NavigationContainer>
+        </PostsContext.Provider>
+      </StoriesContext.Provider>
     </AuthContext.Provider>
   );
 }

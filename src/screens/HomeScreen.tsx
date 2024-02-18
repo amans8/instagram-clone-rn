@@ -10,8 +10,6 @@ import {Image, StyleSheet} from 'react-native';
 import {users} from '../../data/users';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import TitleBar from '../components/TitleBar';
-import ProfileTitleBar from '../components/ProfileTitleBar';
-import ProfileTitleRight from '../components/ProfileTitleRight';
 
 export interface User {
   username: string;
@@ -55,20 +53,13 @@ export default function HomeScreen({navigation}: any) {
           },
           headerShadowVisible: false,
           headerShown:
-            route.name === 'Feed' || route.name === 'Search' ? false : true,
-          headerTitle: () =>
-            route.name === 'Profile' ? (
-              <ProfileTitleBar
-                username={user?.username ? user?.username : ''}
-              />
-            ) : (
-              <TitleBar />
-            ),
+            route.name === 'Feed' ||
+            route.name === 'Search' ||
+            route.name === 'Profile'
+              ? false
+              : true,
+          headerTitle: () => <TitleBar />,
           headerTitleAlign: 'left',
-          headerRight: () =>
-            route.name === 'Profile' ? (
-              <ProfileTitleRight navigation={navigation} />
-            ) : null,
         };
       }}>
       <Tab.Screen
@@ -140,10 +131,6 @@ export default function HomeScreen({navigation}: any) {
         }}
       />
     </Tab.Navigator>
-
-    //open posts
-    //create post
-    //allow edit self posts
   );
 }
 

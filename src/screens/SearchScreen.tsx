@@ -6,6 +6,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import ProfileScreen from './ProfileScreen';
 import ProfileTitleBar from '../components/ProfileTitleBar';
 import TitleBar from '../components/TitleBar';
+import PostScreen from './PostScreen';
 
 const SearchStack = createNativeStackNavigator();
 
@@ -20,7 +21,8 @@ export default function SearchScreen({navigation}: any) {
             backgroundColor: '#000',
           },
           headerTitle: () =>
-            route.name === 'SearchStackProfile' ? (
+            route.name === 'SearchStackProfile' ||
+            route.name === 'SearchStackPost' ? (
               <ProfileTitleBar
                 username={currentUser?.username ? currentUser?.username : ''}
               />
@@ -39,6 +41,7 @@ export default function SearchScreen({navigation}: any) {
         )}
       </SearchStack.Screen>
       <SearchStack.Screen name="SearchStackProfile" component={ProfileScreen} />
+      <SearchStack.Screen name="SearchStackPost" component={PostScreen} />
     </SearchStack.Navigator>
   );
 }

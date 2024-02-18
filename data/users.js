@@ -7,7 +7,7 @@ export const users = [
   },
   {
     username: 'janedoe',
-    profilePic: 'https://picsum.photos/id/870/200/200.jpg',
+    profilePic: 'https://picsum.photos/id/64/4326/2884',
     name: 'Jane Doe',
     bio: "This is bio. It's a short description about me.",
   },
